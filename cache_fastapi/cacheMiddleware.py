@@ -5,7 +5,7 @@ from starlette.concurrency import iterate_in_threadpool
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import StreamingResponse, Response
 
-from caching.wrappers import retrieve_cache, create_cache
+from cache_fastapi.wrappers import retrieve_cache, create_cache
 
 
 class CacheMiddleware(BaseHTTPMiddleware):

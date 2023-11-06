@@ -1,7 +1,7 @@
 import time
 from fastapi import FastAPI
 
-from caching.cacheMiddleware import CacheMiddleware
+from cache_fastapi.cacheMiddleware import CacheMiddleware
 
 cached_endpoints = [
     "/test"
