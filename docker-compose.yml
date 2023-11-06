@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  server:
+    build: .
+    restart: on-failure
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    volumes:
+      - ".:/fastapi_app"
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
