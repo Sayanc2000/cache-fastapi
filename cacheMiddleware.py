@@ -38,10 +38,19 @@ class CacheMiddleware(BaseHTTPMiddleware):
             response.body_iterator = iterate_in_threadpool(iter(response_body))
 
             if response.status_code == 200:
-                await create_cache(response_body[0].decode(), key)
+                if cache_control == 'no-store':
+                    return response
+                age_split = cache_control.split("=")
+                if age_split[0] == 'max-age':
+                    await create_cache(response_body[0].decode(), key, int(age_split[1]))
+                else:
+                    await create_cache(response_body[0].decode(), key)
             return response
 
         else:
             # If the response is cached, return it directly
-            json_data_str = stored_cache.decode('utf-8')
-            return StreamingResponse(iter([json_data_str]), media_type="application/json")
+            json_data_str = stored_cache[0].decode('utf-8')
+            headers = {
+                'Cache-Control': f"max-age:{stored_cache[1]}"
+            }
+            return StreamingResponse(iter([json_data_str]), media_type="application/json", headers=headers)
