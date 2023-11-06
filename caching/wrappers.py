@@ -1,6 +1,14 @@
 from redis import asyncio as aioredis
+from dotenv import load_dotenv
+import os
 
-redis = aioredis.from_url('redis://redis:6379')
+load_dotenv()
+
+REDIS_URL = os.environ.get('REDIS_URL', None)
+if not REDIS_URL:
+    raise Exception("Please add REDIS_URL in environment")
+
+redis = aioredis.from_url(REDIS_URL)
 
 
 async def create_cache(resp, key: str, ex: int = 60):
