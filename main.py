@@ -17,11 +17,15 @@ cached_endpoints = [
 async def cache_check_header(request: Request, call_next):
     path_url = request.url.path
     cache_control = request.headers.get('Cache-Control', None)
+    auth = request.headers.get('Authorization', "token public")
+    token = auth.split(" ")[1]
+
+    key = f"{path_url}_{token}"
 
     if path_url not in cached_endpoints:
         return await call_next(request)
 
-    stored_cache = await retrieve_cache(path_url)
+    stored_cache = await retrieve_cache(key)
 
     res = stored_cache and cache_control != 'no-cache'
 
@@ -29,7 +33,7 @@ async def cache_check_header(request: Request, call_next):
         response: StreamingResponse = await call_next(request)
         response_body = [chunk async for chunk in response.body_iterator]
         response.body_iterator = iterate_in_threadpool(iter(response_body))
-        await create_cache(response_body[0].decode(), path_url)
+        await create_cache(response_body[0].decode(), key)
 
         return response
 
