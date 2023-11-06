@@ -17,15 +17,24 @@ class CacheMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.cached_endpoints = cached_endpoints
 
+    def matches_any_path(self, path_url):
+        for pattern in self.cached_endpoints:
+            if pattern in path_url:
+                return True
+        return False
+
     async def dispatch(self, request: Request, call_next) -> Response:
         path_url = request.url.path
+        request_type = request.method
         cache_control = request.headers.get('Cache-Control', None)
         auth = request.headers.get('Authorization', "token public")
         token = auth.split(" ")[1]
 
         key = f"{path_url}_{token}"
 
-        if path_url not in self.cached_endpoints:
+        matches = self.matches_any_path(path_url)
+
+        if not matches or request_type != 'GET':
             return await call_next(request)
 
         stored_cache = await retrieve_cache(key)
@@ -40,11 +49,14 @@ class CacheMiddleware(BaseHTTPMiddleware):
             if response.status_code == 200:
                 if cache_control == 'no-store':
                     return response
-                age_split = cache_control.split("=")
-                if age_split[0] == 'max-age':
-                    await create_cache(response_body[0].decode(), key, int(age_split[1]))
+
+                if not cache_control:
+                    max_age = 60
+                elif "max-age" in cache_control:
+                    max_age = int(cache_control.split("=")[1])
                 else:
-                    await create_cache(response_body[0].decode(), key)
+                    max_age = 60
+                await create_cache(response_body[0].decode(), key, max_age)
             return response
 
         else:

@@ -4,7 +4,8 @@ from fastapi import FastAPI
 from cache_fastapi.cacheMiddleware import CacheMiddleware
 
 cached_endpoints = [
-    "/test"
+    "/test",
+    "/data/"
 ]
 
 app = FastAPI()
@@ -17,4 +18,22 @@ def root():
         time.sleep(0.5)
     return {
         "hello": "world"
+    }
+
+
+@app.get("/data/{data_id}")
+def data_by_id(data_id: int):
+    for i in range(2):
+        time.sleep(0.5)
+    return {
+        "resp": data_id
+    }
+
+
+@app.get("/data")
+def all_data():
+    for i in range(2):
+        time.sleep(0.5)
+    return {
+        "resp": "all data"
     }
