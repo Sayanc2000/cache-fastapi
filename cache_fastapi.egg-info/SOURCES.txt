@@ -1,0 +1,12 @@
+LICENSE
+README.md
+setup.cfg
+setup.py
+cache_fastapi/__init__.py
+cache_fastapi/cacheMiddleware.py
+cache_fastapi/wrappers.py
+cache_fastapi.egg-info/PKG-INFO
+cache_fastapi.egg-info/SOURCES.txt
+cache_fastapi.egg-info/dependency_links.txt
+cache_fastapi.egg-info/requires.txt
+cache_fastapi.egg-info/top_level.txt

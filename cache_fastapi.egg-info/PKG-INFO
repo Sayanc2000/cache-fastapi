@@ -1,0 +1,25 @@
+Metadata-Version: 2.1
+Name: cache-fastapi
+Version: 0.0.2
+Summary: Clean caching library for FastAPI
+Home-page: https://github.com/Sayanc2000/cache-fastapi
+Author: Sayan Chakraborty
+Author-email: sayanc20002@gmail.com
+License: MIT License
+Keywords: redis,aioredis,asyncio,fastapi,starlette,cache
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+"
+# Cache-FastAPI
+
+A lightweight caching library which leverages FastAPI's middleware functionality
+and follows best practices of cache-control to easily speed up your large requests.
+
+N.B: Only GET requests get cached
