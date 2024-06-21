@@ -5,7 +5,7 @@ from starlette.concurrency import iterate_in_threadpool
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import StreamingResponse, Response
 
-from cache_fastapi.wrappers import retrieve_cache, create_cache
+from cache_fastapi.Backends.base_backend import BaseBackend
 
 
 class CacheMiddleware(BaseHTTPMiddleware):
@@ -13,9 +13,11 @@ class CacheMiddleware(BaseHTTPMiddleware):
             self,
             app,
             cached_endpoints: List[str],
+            backend: BaseBackend
     ):
         super().__init__(app)
         self.cached_endpoints = cached_endpoints
+        self.backend = backend
 
     def matches_any_path(self, path_url):
         for pattern in self.cached_endpoints:
@@ -26,21 +28,17 @@ class CacheMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
         path_url = request.url.path
         request_type = request.method
-        cache_control = request.headers.get('Cache-Control', None)
+        cache_control = request.headers.get('Cache-Control', 'max-age=60')
         auth = request.headers.get('Authorization', "token public")
         token = auth.split(" ")[1]
 
         key = f"{path_url}_{token}"
 
         matches = self.matches_any_path(path_url)
-
-        if not matches or request_type != 'GET':
+        if not matches or request_type != 'GET' or cache_control == 'no-cache':
             return await call_next(request)
 
-        stored_cache = await retrieve_cache(key)
-
-        res = stored_cache and cache_control != 'no-cache'
-
+        res = await self.backend.retrieve(key)
         if not res:
             response: Response = await call_next(request)
             response_body = [chunk async for chunk in response.body_iterator]
@@ -56,13 +54,13 @@ class CacheMiddleware(BaseHTTPMiddleware):
                     max_age = int(cache_control.split("=")[1])
                 else:
                     max_age = 60
-                await create_cache(response_body[0].decode(), key, max_age)
+                await self.backend.create(response_body[0].decode(), key, max_age)
             return response
 
         else:
             # If the response is cached, return it directly
-            json_data_str = stored_cache[0].decode('utf-8')
+            json_data_str = res[0].decode('utf-8')
             headers = {
-                'Cache-Control': f"max-age:{stored_cache[1]}"
+                'Cache-Control': f"max-age:{res[1]}"
             }
             return StreamingResponse(iter([json_data_str]), media_type="application/json", headers=headers)
