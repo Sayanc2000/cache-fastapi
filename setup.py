@@ -1,18 +1,16 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 long_description = """"
 # Cache-FastAPI
 
 A lightweight caching library which leverages FastAPI's middleware functionality
 and follows best practices of cache-control to easily speed up your large requests.
-
-N.B: Only GET requests get cached
 """
 
 setup(
     name="cache_fastapi",
-    packages=['cache_fastapi'],
-    version="0.0.2",
+    packages=find_packages(),
+    version="0.0.5",
     author="Sayan Chakraborty",
     author_email="sayanc20002@gmail.com",
     description="Clean caching library for FastAPI",
