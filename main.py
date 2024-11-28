@@ -1,12 +1,14 @@
 import time
+
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 from cache_fastapi.Backends.memory_backend import MemoryBackend
 from cache_fastapi.cacheMiddleware import CacheMiddleware
 
 cached_endpoints = [
     "/test",
-    "/data/"
+    "/data/update"
 ]
 
 app = FastAPI()
@@ -24,19 +26,16 @@ def root():
     ]
 
 
-@app.get("/data/{data_id}")
-def data_by_id(data_id: int):
+class Data(BaseModel):
+    x: int
+    y: int
+
+
+@app.post("/data/update")
+def update_data(data: Data):
+    print("Endpoint invoked ", data)
     for i in range(2):
         time.sleep(0.5)
     return {
-        "resp": data_id
-    }
-
-
-@app.get("/data")
-def all_data():
-    for i in range(2):
-        time.sleep(0.5)
-    return {
-        "resp": "all data"
+        "resp": "updated"
     }
