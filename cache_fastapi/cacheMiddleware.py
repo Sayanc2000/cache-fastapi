@@ -1,5 +1,6 @@
 import hashlib
 import json
+import logging
 from typing import List
 
 from fastapi import Request
@@ -8,6 +9,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import StreamingResponse, Response
 
 from cache_fastapi.Backends.base_backend import BaseBackend
+
+logger = logging.getLogger(__name__)
 
 
 class CacheMiddleware(BaseHTTPMiddleware):
@@ -40,11 +43,13 @@ class CacheMiddleware(BaseHTTPMiddleware):
         # Use SHA-256 to create a consistent hash
         return hashlib.sha256(body.encode('utf-8')).hexdigest()
 
-    async def get_request_body(self, request: Request):
+    async def get_request_body(self, request: Request) -> str:
         """
         Safely retrieve the request body for caching.
         Works for both GET and POST requests.
+        Always returns a string can be empty
         """
+        body_str = ""
         try:
             # For POST requests, read the body
             if request.method == 'POST':
@@ -57,10 +62,10 @@ class CacheMiddleware(BaseHTTPMiddleware):
                 except:
                     # If not JSON, use the raw bytes
                     body_str = body_bytes.decode('utf-8')
-                return body_str
-            return ""
-        except Exception:
-            return ""
+            return body_str
+        except Exception as e:
+            logger.warning("Error reading request body: ", e)
+            return body_str
 
     async def dispatch(self, request: Request, call_next) -> Response:
         path_url = request.url.path
