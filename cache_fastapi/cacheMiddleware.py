@@ -3,6 +3,7 @@ import json
 import logging
 from typing import List
 
+import os
 from fastapi import Request
 from starlette.concurrency import iterate_in_threadpool
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -10,6 +11,7 @@ from starlette.responses import StreamingResponse, Response
 
 from cache_fastapi.Backends.base_backend import BaseBackend
 
+DEFAULT_CACHE_TTL = int(os.getenv("CACHE_FASTAPI_DEFAULT_CACHE_TTL", 60))
 logger = logging.getLogger(__name__)
 
 
@@ -18,11 +20,13 @@ class CacheMiddleware(BaseHTTPMiddleware):
             self,
             app,
             cached_endpoints: List[str],
-            backend: BaseBackend
+            backend: BaseBackend,
+            default_cache_ttl: int = DEFAULT_CACHE_TTL,
     ):
         super().__init__(app)
         self.cached_endpoints = cached_endpoints
         self.backend = backend
+        self.default_cache_control = f'max-age={default_cache_ttl}'
 
     def matches_any_path(self, path_url):
         for pattern in self.cached_endpoints:
@@ -70,7 +74,7 @@ class CacheMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
         path_url = request.url.path
         request_type = request.method
-        cache_control = request.headers.get('Cache-Control', 'max-age=60')
+        cache_control = request.headers.get('Cache-Control', self.default_cache_control)
         auth = request.headers.get('Authorization', "token public")
         token = auth.split(" ")[1]
 

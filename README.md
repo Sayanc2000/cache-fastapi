@@ -38,7 +38,7 @@ and follows best practices of cache-control to easily speed up your large reques
 
 3. The cached_endpoints can be used to define all the endpoints you want to cache. 
     This gives you can central place where you can keep track of all the cached endpoints.
-4. The default cache max-age is 60 secs, to overwrite that in the API request send the following header
+4. The default cache max-age is defined via `CACHE_FASTAPI_DEFAULT_CACHE_TTL` environmental variable and defaults to 60 secs. To overwrite that in the API request send the following header
     </br>`Cache-Control: max-age=time`
     </br>Here time needs to be in seconds.
 5. Once a response is cached, you'll be able to get the cached response age in the response header `Cache-Control`
